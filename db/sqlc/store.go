@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-// Store all function to execute db queries and transaction
+// store mencakup semua function untuk exec db query & tx
 type Store struct {
 	*Queries
 	db *sql.DB
@@ -17,10 +17,11 @@ func NewStore(db *sql.DB) *Store {
 		db:      db,
 		Queries: New(db),
 	}
+
 }
 
+// execTx execute a functino di dalam db tx
 func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
-
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -28,38 +29,40 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 
 	q := New(tx)
 	err = fn(q)
+
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return fmt.Errorf("tx error: %v", "rb err: %v", err, rbErr)
+			return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
 		}
 		return err
 	}
+
 	return tx.Commit()
 }
 
-// contain  the input of the transfer tx
-type TranferTxParams struct {
-	FromAccountID sql.NullInt64 `json:"from_account_id"`
-	ToAccountID   sql.NullInt64 `json:"to_account_id"`
-	Amount        int64         `json:"amount"`
+// transfertxparams contains the input parameters of the transfer tx
+type TransferTxParams struct {
+	FromAccountID int64 `json:"from_account_id"`
+	ToAccountID   int64 `json:"to_account_id"`
+	Amount        int64 `json:"amount"`
 }
 
-// is the result of the transfer tx
 type TransferTxResult struct {
-	Transfer      Transfer `json:"transfer"`
-	FromAccountID Acount   `json:"from_account_id"`
-	ToAccountID   Acount   `json:"ti_account_id"`
-	FromEntry     Entry    `json:"from_entry"`
-	ToEntry       Entry    `json:"to_entry"`
+	Transfer    Transfer `json:"transfer"`
+	FromAccount Account  `json:"from_account"`
+	ToAccount   Account  `json:"to_account"`
+	FromEntry   Entry    `json:"from_entry"`
+	ToEntry     Entry    `json:"to_entry"`
 }
 
-func (store *Store) TransferTx(ctx context.Context, arg TranferTxParams) (TransferTxResult, error) {
-
+// TransferTx performs a money transfer from one account to other
+// it create a transfer record, add account entries, and update accounts balance within single db tx
+func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
-		var err error
 
+		var err error
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
 			FromAccountID: arg.FromAccountID,
 			ToAccountID:   arg.ToAccountID,
@@ -69,6 +72,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TranferTxParams) (Transf
 			return err
 		}
 
+		//from entry
 		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.FromAccountID,
 			Amount:    -arg.Amount,
@@ -77,7 +81,8 @@ func (store *Store) TransferTx(ctx context.Context, arg TranferTxParams) (Transf
 			return err
 		}
 
-		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
+		//to entry
+		result.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.ToAccountID,
 			Amount:    arg.Amount,
 		})
@@ -85,7 +90,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TranferTxParams) (Transf
 			return err
 		}
 
-		//TODO = update account balance
+		//TODO: update accounts balance
 
 		return nil
 	})
