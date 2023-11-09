@@ -12,6 +12,7 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+// RandomInt generates a random integer
 func RandomInt(min, max int64) int64 {
 	return min + rand.Int63n(max-min+1)
 }

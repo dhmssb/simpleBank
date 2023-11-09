@@ -8,6 +8,7 @@ import (
 )
 
 const addAccountBalance = `-- name: AddAccountBalance :one
+
 UPDATE accounts
 SET balance = balance + $1
 WHERE id = $2
@@ -19,6 +20,11 @@ type AddAccountBalanceParams struct {
 	ID     int64 `json:"id"`
 }
 
+// -- name: GetAccountFor
+// Update :one
+// SELECT * FROM accounts
+// WHERE id = $1 LIMIT 1
+// FOR NO KEY UPDATE;
 func (q *Queries) AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Account, error) {
 	row := q.db.QueryRowContext(ctx, addAccountBalance, arg.Amount, arg.ID)
 	var i Account

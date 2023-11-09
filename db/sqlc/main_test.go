@@ -14,18 +14,20 @@ const (
 	dbSource = "postgresql://postgres:123456@localhost:5432/cimet?sslmode=disable"
 )
 
-var testQueries *Queries
-var testDB *sql.DB
+var (
+	testQueries *Queries
+	testDB      *sql.DB
+	testStore   Store
+)
 
 func TestMain(m *testing.M) {
 	var err error
-
 	testDB, err = sql.Open(dbDriver, dbSource)
 	if err != nil {
-		log.Fatal("Cannot connect to DB", err)
+		log.Fatal("cannot connect to db: ", err)
 	}
 
 	testQueries = New(testDB)
-	os.Exit(m.Run())
 
+	os.Exit(m.Run())
 }
