@@ -11,7 +11,7 @@ import (
 
 const (
 	dbDriver = "postgres"
-	dbSource = "postgresql://postgres:123456@localhost:5432/cimet?sslmode=disable"
+	dbSource = "postgresql://postgres:123456@localhost:5432/postgres?sslmode=disable"
 )
 
 var (
