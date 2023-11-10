@@ -10,8 +10,14 @@ dropdb:
 migrateup:
 	migrate -path db/migration -database "postgresql://postgres:123456@localhost:5432/cimet?sslmode=disable" -verbose up
 
+migrateup1:
+	migrate -path db/migration -database "postgresql://postgres:123456@localhost:5432/cimet?sslmode=disable" -verbose up 1
+
 migratedown:
 	migrate -path db/migration -database "postgresql://postgres:123456@localhost:5432/cimet?sslmode=disable" -verbose down
+
+migratedown1:
+	migrate -path db/migration -database "postgresql://postgres:123456@localhost:5432/cimet?sslmode=disable" -verbose down 1
 
 sqlc:
 	sqlc generate
@@ -25,4 +31,4 @@ start:
 mock:
 	mockgen -package mockdb -destination db/mock/store.go  github.com/dhmssb/simpleBank/db/sqlc Store
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test start mock
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc test start mock migrateup1 migratedown1
