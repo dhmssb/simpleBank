@@ -2,48 +2,30 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/dhmssb/simpleBank/api"
+	db "github.com/dhmssb/simpleBank/db/sqlc"
+	"github.com/dhmssb/simpleBank/util"
+	_ "github.com/lib/pq"
 )
 
 func main() {
-	// Inisialisasi koneksi ke basis data
-	db, err := sql.Open("mysql", "username:password@tcp(localhost:3306)/dbname")
+
+	config, err := util.LoadConfig(".")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("cannot load config:", err)
 	}
-	defer db.Close()
 
-	// Mulai transaksi
-	tx, err := db.Begin()
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("cannot connect to db: ", err)
 	}
 
-	// Contoh query
-	query1 := "INSERT INTO table1 (column1) VALUES ('value1')"
-	query2 := "UPDATE table2 SET column2 = 'value2' WHERE id = 1"
-
-	// Eksekusi query dalam transaksi
-	_, err = tx.Exec(query1)
+	store := db.NewStore(conn)
+	server := api.NewServer(store)
+	err = server.Start(config.ServerAddress)
 	if err != nil {
-		tx.Rollback() // Rollback jika ada error
-		log.Fatal(err)
+		log.Fatal("cannot start server:", err)
 	}
-
-	_, err = tx.Exec(query2)
-	if err != nil {
-		tx.Rollback() // Rollback jika ada error
-		log.Fatal(err)
-	}
-
-	// Commit transaksi
-	if err := tx.Commit(); err != nil {
-		tx.Rollback() // Rollback jika ada error
-		log.Fatal(err)
-	}
-
-	fmt.Println("Transaksi berhasil.")
 }

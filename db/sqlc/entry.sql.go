@@ -5,6 +5,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createEntry = `-- name: CreateEntry :one
@@ -59,7 +60,7 @@ OFFSET $3
 `
 
 type ListEntriesParams struct {
-	AccountID int64 `json:"account_id"`
+	AccountID sql.NullInt64 `json:"account_id"`
 	Limit     int32         `json:"limit"`
 	Offset    int32         `json:"offset"`
 }
@@ -70,7 +71,7 @@ func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Ent
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Entry
+	items := []Entry{}
 	for rows.Next() {
 		var i Entry
 		if err := rows.Scan(

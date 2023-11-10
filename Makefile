@@ -8,7 +8,7 @@ dropdb:
 	docker exec -it postgres dropdb cimet
 
 migrateup:
-	migrate -path db/migration -database "postgresql://postgres:123456@localhost:5432/postgres?sslmode=disable" -verbose up
+	migrate -path db/migration -database "postgresql://postgres:123456@localhost:5432/cimet?sslmode=disable" -verbose up
 
 migratedown:
 	migrate -path db/migration -database "postgresql://postgres:123456@localhost:5432/cimet?sslmode=disable" -verbose down
@@ -19,4 +19,7 @@ sqlc:
 test:
 	go test -v -cover ./...
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test
+start: 
+	go run main.go
+
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc test start
