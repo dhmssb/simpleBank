@@ -8,7 +8,7 @@ dropdb:
 	docker exec -it postgres dropdb cimet
 
 migrateup:
-	migrate -path db/migration -database "postgresql://postgres:123456@localhost:5432/cimet?sslmode=disable" -verbose up
+	migrate -path db/migration -database "postgresql://postgres:123456@localhost:5432/postgres?sslmode=disable" -verbose up
 
 migrateup1:
 	migrate -path db/migration -database "postgresql://postgres:123456@localhost:5432/cimet?sslmode=disable" -verbose up 1
