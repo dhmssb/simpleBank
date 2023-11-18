@@ -1,5 +1,5 @@
 postgres:
-	docker run --rm --name dockPost -e POSTGRES_PASSWORD=123456 -e POSTGRES_USER=postgres -p 5432:5432 -d postgres:latest  
+	docker run --rm --name dockPost --network bank-network -e POSTGRES_PASSWORD=123456 -e POSTGRES_USER=postgres -p 5432:5432 -d postgres:latest  
 
 createdb:
 	docker exec -it postgres createdb --username=postgres cimet
